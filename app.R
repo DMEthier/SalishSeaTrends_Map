@@ -42,6 +42,18 @@ server <- function(input, output, session) {
   trends_map <- trends_map %>% 
     left_join(species, by="species_id")
   
+  trends_map <- trends_map %>%
+    mutate(
+      english_name = case_when(
+        english_name %in% c("gull (large)", "Iceland Gull", "Iceland Gull (Thayer's)", "Western x Glaucous-winged Gull (hybrid)", "Glaucous Gull", "Glaucous-winged Gull", "Western Gull", "Herring Gull", "Iceland (Thayer's) Gull", "Iceland (Thayer's Gull)", "WEGU x GWGU hybrid", "California Gull") ~ "Large Gull",
+        english_name %in% c("scaup sp.", "Lesser Scaup", "Greater Scaup", "Greater/Lesser Scaup") ~ "Greater-Lesser Scaup",
+        english_name %in% c("Eared Grebe", "Horned Grebe") ~ "Eared-Horned Grebe",
+        english_name %in% c("Canada Goose", "Cackling Goose") ~ "Canada-Cackling Goose",
+        english_name %in% c("Clark's Grebe", "Western Grebe") ~ "Western-Clark's Grebe",
+        TRUE ~ english_name
+      )
+    )
+  
   # Update species choices in selectInput
   observe({
     species_choices <- sort(unique(trends_map$english_name))
