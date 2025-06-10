@@ -5,13 +5,13 @@ library(readr)
 #library(naturecounts)
 
 ui <- fluidPage(
-  titlePanel("Salish Sea Coastal Waterbird Trends: Winter 2008/09 - 2024/25"),
+  titlePanel(HTML("Salish Sea Coastal Waterbird Trends<br>Winter 2008/09 - 2024/25")),
   sidebarLayout(
     sidebarPanel(
       selectInput(
         inputId = "species",
         label = "Select Species:",
-        choices = NULL, # choices will be updated in server
+        choices = NULL,
         selected = NULL
       )
     ),
