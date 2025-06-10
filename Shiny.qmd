@@ -1,0 +1,98 @@
+---
+title: "Shiny"
+format: html
+editor: visual
+server: shiny
+---
+
+```{r}
+
+library(shiny)
+library(leaflet)
+library(dplyr)
+library(readr)
+
+ui <- fluidPage(
+  titlePanel("Species Trends Map"),
+  sidebarLayout(
+    sidebarPanel(
+      selectInput(
+        inputId = "species",
+        label = "Select Species:",
+        choices = NULL, # choices will be updated in server
+        selected = NULL
+      )
+    ),
+    mainPanel(
+      leafletOutput("map", height = 600)
+    )
+  )
+)
+
+server <- function(input, output, session) {
+  # Read and preprocess data
+  trends <- read.csv("Output/SalishSea_Species_TrendsSlope_SPDE.csv") %>% 
+    tidyr::drop_na(results_code) %>% 
+    select(area_code, species_code, trnd, lower_ci, upper_ci, percent_change)
+  
+  events <- read_csv("Data/events.csv") %>%
+    select(SurveyAreaIdentifier, wyear, DecimalLatitude, DecimalLongitude) %>%
+    distinct()
+  
+  # Merge trends with site coordinates
+  trends_map <- trends %>%
+    left_join(events, by = c("area_code" = "SurveyAreaIdentifier"))
+  
+  # Update species choices in selectInput
+  observe({
+    species_choices <- sort(unique(trends_map$species_code))
+    updateSelectInput(session, "species",
+                      choices = species_choices,
+                      selected = species_choices[1])
+  })
+  
+  # Reactive filtered data based on selected species
+  filtered_data <- reactive({
+    req(input$species)
+    trends_map %>%
+      filter(species_code == input$species) %>%
+      mutate(
+        popup = paste0(
+          "<b>Area:</b> ", area_code, "<br>",
+          "<b>Species:</b> ", species_code, "<br>",
+          "<b>Trend (slope):</b> ", round(trnd, 2), "<br>",
+          "<b>95% CI:</b> [", round(lower_ci, 2), ", ", round(upper_ci, 2), "]<br>",
+          "<b>Percent Change:</b> ", round(percent_change, 1), "%<br>"
+        )
+      )
+  })
+  
+  output$map <- renderLeaflet({
+    data <- filtered_data()
+    pal <- colorNumeric(palette = "RdYlBu", domain = data$trnd, reverse = TRUE)
+    
+    leaflet(data) %>%
+      addProviderTiles("CartoDB.Positron") %>%
+      addCircleMarkers(
+        lng = ~DecimalLongitude,
+        lat = ~DecimalLatitude,
+        radius = 8,
+        color = ~pal(trnd),
+        stroke = TRUE,
+        fillOpacity = 0.8,
+        popup = ~popup
+      ) %>%
+      addLegend(
+        "bottomright",
+        pal = pal,
+        values = ~trnd,
+        title = "Trend (slope)",
+        opacity = 1
+      )
+  })
+}
+
+shinyApp(ui, server)
+
+
+```
