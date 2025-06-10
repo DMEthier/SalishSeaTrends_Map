@@ -1,12 +1,3 @@
----
-title: "Shiny"
-format: html
-editor: visual
-server: shiny
----
-
-```{r}
-
 library(shiny)
 library(leaflet)
 library(dplyr)
@@ -60,20 +51,20 @@ server <- function(input, output, session) {
   })
   
   # Reactive filtered data based on selected species
-filtered_data <- reactive({
-  req(input$species)
-  trends_map %>%
-    filter(english_name == input$species) %>%
-    mutate(
-      popup = paste0(
-        "<b>Area:</b> ", area_code, "<br>",
-        "<b>Species:</b> ", english_name, "<br>",
-        "<b>Trend (slope):</b> ", round(trnd, 2), "<br>",
-        "<b>95% CI:</b> [", round(lower_ci, 2), ", ", round(upper_ci, 2), "]<br>",
-        "<b>Percent Change:</b> ", round(percent_change, 1), "%<br>"
+  filtered_data <- reactive({
+    req(input$species)
+    trends_map %>%
+      filter(english_name == input$species) %>%
+      mutate(
+        popup = paste0(
+          "<b>Area:</b> ", area_code, "<br>",
+          "<b>Species:</b> ", english_name, "<br>",
+          "<b>Trend (Annual % Change):</b> ", round(trnd, 2), "<br>",
+          "<b>95% CI:</b> [", round(lower_ci, 2), ", ", round(upper_ci, 2), "]<br>",
+          "<b>Percent Change:</b> ", round(percent_change, 1), "%<br>"
+        )
       )
-    )
-})
+  })
   
   output$map <- renderLeaflet({
     data <- filtered_data()
@@ -81,18 +72,18 @@ filtered_data <- reactive({
     
     leaflet(data) %>%
       addProviderTiles("CartoDB.Positron") %>%
-    addCircleMarkers(
-  lng = ~DecimalLongitude,
-  lat = ~DecimalLatitude,
-  radius = 8,
-  color = ~pal(trnd),         # border color
-  fillColor = ~pal(trnd),     # fill color (same as border)
-  stroke = TRUE,              # border around the point
-  weight = 1,                 # border thickness
-  opacity = 1,                # border opacity
-  fillOpacity = 1,            # fill opacity (fully solid)
-  popup = ~popup
-) %>%
+      addCircleMarkers(
+        lng = ~DecimalLongitude,
+        lat = ~DecimalLatitude,
+        radius = 8,
+        color = ~pal(trnd),         # border color
+        fillColor = ~pal(trnd),     # fill color (same as border)
+        stroke = TRUE,              # border around the point
+        weight = 1,                 # border thickness
+        opacity = 1,                # border opacity
+        fillOpacity = 1,            # fill opacity (fully solid)
+        popup = ~popup
+      ) %>%
       addLegend(
         "bottomright",
         pal = pal,
@@ -104,6 +95,3 @@ filtered_data <- reactive({
 }
 
 shinyApp(ui, server)
-
-
-```
