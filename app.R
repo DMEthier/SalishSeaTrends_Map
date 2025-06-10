@@ -5,7 +5,7 @@ library(readr)
 #library(naturecounts)
 
 ui <- fluidPage(
-  titlePanel("Salish Sea Coastal Waterbird Trends"),
+  titlePanel("Salish Sea Coastal Waterbird Trends: Winter 2008/09 - 2024/25"),
   sidebarLayout(
     sidebarPanel(
       selectInput(
@@ -100,7 +100,7 @@ server <- function(input, output, session) {
         "bottomright",
         pal = pal,
         values = ~trnd,
-        title = "Trend (slope)",
+        title = "Trend (annual % change)",
         opacity = 1
       )
   })
