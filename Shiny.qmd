@@ -31,7 +31,7 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   # Read and preprocess data
-  trends <- read.csv("Output/SalishSea_Species_TrendsSlope_SPDE.csv") %>% 
+  trends <- read.csv("Data/SalishSea_Species_TrendsSlope_SPDE.csv") %>% 
     tidyr::drop_na(results_code) %>% 
     select(area_code, species_code, trnd, lower_ci, upper_ci, percent_change)
   
