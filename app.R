@@ -80,7 +80,10 @@ server <- function(input, output, session) {
   
   output$map <- renderLeaflet({
     data <- filtered_data()
-    pal <- colorNumeric(palette = "RdYlBu", domain = data$trnd, reverse = TRUE)
+    pal <- colorNumeric(
+      palette = c("red", "white", "blue"),
+      domain = data$trnd
+    )
     
     leaflet(data) %>%
       addProviderTiles("CartoDB.Positron") %>%
